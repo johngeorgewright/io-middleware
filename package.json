@@ -4,10 +4,9 @@
   "description": "Typed Express middleware for accumulating state across middleware",
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/common/index.js",
   "module": "./dist/es/index.js",
   "scripts": {
-    "build": "npm run clean && tsc && tsc --project tsconfig.common.json",
+    "build": "npm run clean && tsc",
     "clean": "rimraf dist",
     "generate-types": "node --loader ts-node/esm bin/generateIOMiddlewareFunction.ts",
     "prepare": "husky install",
@@ -81,5 +80,7 @@
   "dependencies": {
     "tslib": "2.6.2"
   },
-  "packageManager": "yarn@4.0.2"
+  "overrides": {
+    "mime@*": "1.6.0"
+  }
 }
