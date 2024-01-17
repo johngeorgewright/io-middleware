@@ -4,7 +4,11 @@
   "description": "Typed Express middleware for accumulating state across middleware",
   "type": "module",
   "sideEffects": false,
-  "module": "./dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "npm run clean && tsc",
     "clean": "rimraf dist",
