@@ -5,6 +5,7 @@ import { IOMiddleware } from './types.js'
 export { IOMiddleware, IOMiddlewareFunction }
 
 export const HALT = Symbol.for('io-middleware/halt')
+export const FINISH = Symbol.for('io-middleware/finish')
 
 export const ioMiddleware: IOMiddlewareFunction = (
   initValue: any,
@@ -15,9 +16,9 @@ export const ioMiddleware: IOMiddlewareFunction = (
       let value = initValue
       for (const fn of middleware) {
         value = await fn(req, res, value)
-        if (value === HALT) break
+        if (value === HALT || value === FINISH) break
       }
-      next()
+      if (value !== FINISH) next()
     } catch (error) {
       next(error)
     }
