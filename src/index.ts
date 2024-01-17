@@ -1,1 +1,25 @@
-export * from './foo.js'
+import { RequestHandler } from 'express'
+import { IOMiddlewareFunction } from './IOMiddlewareFunction.js'
+import { IOMiddleware } from './types.js'
+
+export { IOMiddleware, IOMiddlewareFunction }
+
+export const HALT = Symbol.for('io-middleware/halt')
+
+export const ioMiddleware: IOMiddlewareFunction = (
+  initValue: any,
+  ...middleware: IOMiddleware<any, any>[]
+): RequestHandler => {
+  return async (req, res, next) => {
+    try {
+      let value = initValue
+      for (const fn of middleware) {
+        value = await fn(req, res, value)
+        if (value === HALT) break
+      }
+      next()
+    } catch (error) {
+      next(error)
+    }
+  }
+}
