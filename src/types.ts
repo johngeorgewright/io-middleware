@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { type HALT } from './index.js'
 
 export interface IOMiddleware<
   I,
@@ -13,7 +14,7 @@ export interface IOMiddleware<
     req: Request<P, ResBody, ReqBody, ReqQuery, LocalsObj>,
     res: Response<ResBody, LocalsObj>,
     input: I,
-  ): O | Promise<O>
+  ): O | typeof HALT | Promise<O | typeof HALT>
 }
 
 export interface ParamsDictionary {
