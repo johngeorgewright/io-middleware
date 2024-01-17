@@ -1,8 +1,7 @@
 {
-  "name": "@johngeorgewright/ts-module",
+  "name": "io-middleware",
   "version": "3.1.0",
-  "description": "TypeScript library template",
-  "private": true,
+  "description": "Typed Express middleware for accumulating state across middleware",
   "type": "module",
   "sideEffects": false,
   "main": "./dist/common/index.js",
@@ -16,15 +15,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/johngeorgewright/ts-module.git"
+    "url": "git+https://github.com/johngeorgewright/io-middleware.git"
   },
-  "keywords": [],
+  "keywords": [
+    "express",
+    "middleware",
+    "state"
+  ],
   "author": "John Wright <johngeorge.wright@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/johngeorgewright/ts-module/issues"
+    "url": "https://github.com/johngeorgewright/io-middleware/issues"
   },
-  "homepage": "https://github.com/johngeorgewright/ts-module#readme",
+  "homepage": "https://github.com/johngeorgewright/io-middleware#readme",
   "devDependencies": {
     "@commitlint/cli": "18.4.3",
     "@commitlint/config-conventional": "18.4.3",
