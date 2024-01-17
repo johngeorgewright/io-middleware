@@ -25,19 +25,14 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      - name: Setup Registries
-        run: |
-          yarn config set --home 'npmRegistries["https://registry.npmjs.org"].npmAuthToken' '${{ secrets.NPM_TOKEN }}'
-          yarn config set --home npmPublishRegistry https://registry.npmjs.org
-
-      - name: Yarn
-        run: yarn install --immutable
+      - name: NPM
+        run: npm ci
 
       - name: Build
-        run: yarn build
+        run: npm run build
 
       - name: Release
-        run: yarn semantic-release
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.PUSH_TOKEN }}
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

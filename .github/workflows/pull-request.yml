@@ -3,14 +3,6 @@ name: Pull Request
 on:
   pull_request:
 
-  workflow_call:
-    inputs:
-      build:
-        description: Should it test by building?
-        required: false
-        default: true
-        type: boolean
-
 jobs:
   test:
     name: Test
@@ -21,18 +13,18 @@ jobs:
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Yarn
-        run: yarn install --immutable
-
-      - name: Build
-        run: yarn build
+      - name: NPM
+        run: npm ci
 
       - name: Test
-        run: yarn test
+        run: npm test
+
+      - name: Build
+        run: npx tsc --noEmit

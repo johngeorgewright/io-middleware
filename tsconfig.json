@@ -13,10 +13,9 @@
     "noUnusedParameters": true,
     "outDir": "./dist/es",
     "resolveJsonModule": true,
-    "rootDir": "./src",
     "sourceMap": true,
     "strict": true,
-    "target": "ES2022"
+    "target": "ES2022",
   },
-  "include": ["src"]
+  "include": ["src", "bin/generateIOMiddlewareFunction.ts"],
 }
