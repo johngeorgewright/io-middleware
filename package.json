@@ -14,7 +14,7 @@
     "clean": "rimraf dist",
     "generate-types": "node --loader ts-node/esm bin/generateIOMiddlewareFunction.ts",
     "prepare": "husky install",
-    "test": "npx ts-node-test test"
+    "test": "ts-node-test test"
   },
   "repository": {
     "type": "git",
@@ -73,7 +73,7 @@
   },
   "lint-staged": {
     "*.{md,json,js,jsx,ts,tsx,yml,yaml}": [
-      "npx prettier --ignore-path .gitignore --write"
+      "prettier --ignore-path .gitignore --write"
     ]
   },
   "config": {
