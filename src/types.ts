@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { type FINISH, type HALT } from './index.js'
+import type { FINISH, BREAK } from './index.js'
 
 export interface IOMiddleware<
   I,
@@ -14,7 +14,7 @@ export interface IOMiddleware<
     req: Request<P, ResBody, ReqBody, ReqQuery, LocalsObj>,
     res: Response<ResBody, LocalsObj>,
     input: I,
-  ): O | typeof HALT | typeof FINISH | Promise<O | typeof HALT | typeof FINISH>
+  ): Asyncable<O | typeof BREAK | typeof FINISH>
 }
 
 export interface ParamsDictionary {
@@ -24,3 +24,5 @@ export interface ParamsDictionary {
 export interface ParsedQs {
   [key: string]: undefined | string | string[] | ParsedQs | ParsedQs[]
 }
+
+type Asyncable<T> = T | Promise<T>

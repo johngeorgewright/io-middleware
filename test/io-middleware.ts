@@ -3,7 +3,7 @@ import request from 'supertest'
 import assert from 'node:assert'
 import { test } from 'node:test'
 import { setTimeout } from 'node:timers/promises'
-import { HALT, IOMiddleware, ioMiddleware } from '../src/index.js'
+import { FINISH, BREAK, IOMiddleware, ioMiddleware } from '../src/index.js'
 
 test('passes state from one middleware to the next', (_, done) => {
   const app = express().use(
@@ -40,12 +40,32 @@ test('stopping middleware from continuing', (_, done) => {
         assert.deepStrictEqual(state, {})
         return { foo: 'bar' }
       },
-      () => HALT,
+      () => BREAK,
       () => {
         throw new Error('Middleware did not halt')
       },
     ),
     (_, res) => res.sendStatus(200),
+  )
+
+  request(app).get('/').expect(200).end(done)
+})
+
+test('preventing any further middleware being called', (_, done) => {
+  const app = express().use(
+    ioMiddleware(
+      {},
+      (_, res) => {
+        res.sendStatus(200)
+        return FINISH
+      },
+      () => {
+        throw new Error('Middleware did not finish')
+      },
+    ),
+    () => {
+      throw new Error('Middleware did not finish')
+    },
   )
 
   request(app).get('/').expect(200).end(done)
@@ -61,7 +81,7 @@ test('types with separate functions', () => {
     { foo: string; mung: number }
   > {
     return (_req, _res, state) =>
-      state.foo === 'rab' ? HALT : { ...state, mung: 1 }
+      state.foo === 'rab' ? BREAK : { ...state, mung: 1 }
   }
 
   express().use(ioMiddleware({}, foo(), success()))
