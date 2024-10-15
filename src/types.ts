@@ -1,5 +1,10 @@
 import { Request, Response } from 'express'
-import type { CONTINUE, FINISH, BREAK } from './index.js'
+
+export const BREAK = Symbol.for('io-middleware/break')
+
+export const NEXT = Symbol.for('io-middleware/continue')
+
+export const FINISH = Symbol.for('io-middleware/finish')
 
 export interface IOMiddleware<
   I,
@@ -17,20 +22,20 @@ export interface IOMiddleware<
   ): Asyncable<IOMiddlewareOutput<O>>
 }
 
-interface Continue<T> {
-  type: typeof CONTINUE
+export interface Next<T> {
+  type: typeof NEXT
   state: T
 }
 
-interface Break {
+export interface Break {
   type: typeof BREAK
 }
 
-interface Finish {
+export interface Finish {
   type: typeof FINISH
 }
 
-export type IOMiddlewareOutput<T> = Continue<T> | Break | Finish
+export type IOMiddlewareOutput<T> = Next<T> | Break | Finish
 
 export interface ParamsDictionary {
   [key: string]: string
