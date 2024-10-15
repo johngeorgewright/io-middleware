@@ -13,7 +13,7 @@
     "build": "npm run clean && tsc",
     "clean": "rimraf dist",
     "generate-types": "node --loader ts-node/esm bin/generateIOMiddlewareFunction.ts",
-    "prepare": "husky install",
+    "prepare": "husky",
     "test": "ts-node-test test"
   },
   "repository": {
