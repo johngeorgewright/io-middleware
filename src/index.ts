@@ -1,34 +1,49 @@
 import { RequestHandler } from 'express'
 import { IOMiddlewareFunction } from './IOMiddlewareFunction.js'
-import { IOMiddleware, IOMiddlewareOutput } from './types.js'
+import {
+  BREAK,
+  Break,
+  FINISH,
+  Finish,
+  IOMiddleware,
+  IOMiddlewareOutput,
+  NEXT,
+  Next,
+} from './types.js'
 
 export { IOMiddleware, IOMiddlewareFunction, IOMiddlewareOutput }
 
 /**
- * Break out of the ioMiddleware loop and continue.
+ * Stop ioMiddleware state reduction and instead continue to other middleware
  */
-export const BREAK = Symbol.for('io-middleware/break')
+export function brk(): Break {
+  return { type: BREAK }
+}
 
 /**
- * Continue ioMiddleware loop
+ * Stop ioMiddleware state reduction **and** all other middleware
  */
-export const CONTINUE = Symbol.for('io-middleware/continue')
+export function finish(): Finish {
+  return { type: FINISH }
+}
 
 /**
- * Stop any further middleware.
+ * Continue ioMiddleware state reduction
  */
-export const FINISH = Symbol.for('io-middleware/finish')
+export function next<T>(state: T): Next<T> {
+  return { type: NEXT, state }
+}
 
 export const ioMiddleware: IOMiddlewareFunction =
   (initValue: any, ...middleware: IOMiddleware<any, any>[]): RequestHandler =>
-  async (req, res, next) => {
+  async (req, res, nextMiddleware) => {
     try {
-      let output: IOMiddlewareOutput<any> = { type: CONTINUE, state: initValue }
+      let output: IOMiddlewareOutput<any> = next(initValue)
       for (const fn of middleware) {
-        if (output.type === CONTINUE) output = await fn(req, res, output.state)
+        if (output.type === NEXT) output = await fn(req, res, output.state)
         if (output.type === BREAK || output.type === FINISH) break
       }
-      if (output.type !== FINISH) next()
+      if (output.type !== FINISH) nextMiddleware()
     } catch (error) {
       next(error)
     }

@@ -3,13 +3,7 @@ import request from 'supertest'
 import assert from 'node:assert'
 import { test } from 'node:test'
 import { setTimeout } from 'node:timers/promises'
-import {
-  FINISH,
-  BREAK,
-  IOMiddleware,
-  ioMiddleware,
-  CONTINUE,
-} from '../src/index.js'
+import { IOMiddleware, ioMiddleware, next, brk, finish } from '../src/index.js'
 
 test('passes state from one middleware to the next', (_, done) => {
   const app = express().use(
@@ -19,16 +13,16 @@ test('passes state from one middleware to the next', (_, done) => {
         assert.ok(!!req.headers)
         assert.ok(!!res.send)
         assert.deepStrictEqual(state, {})
-        return { type: CONTINUE, state: { foo: 'bar' } }
+        return next({ foo: 'bar' })
       },
       (_req, _res, state) => {
         assert.deepStrictEqual(state, { foo: 'bar' })
-        return { type: CONTINUE, state: 'success' }
+        return next('success')
       },
       async (_req, _res, state) => {
         await setTimeout(5)
         assert.strictEqual(state, 'success')
-        return { type: BREAK }
+        return brk()
       },
     ),
     (_, res) => res.sendStatus(200),
@@ -45,9 +39,9 @@ test('stopping middleware from continuing', (_, done) => {
         assert.ok(!!req.headers)
         assert.ok(!!res.send)
         assert.deepStrictEqual(state, {})
-        return { type: CONTINUE, state: { foo: 'bar' } }
+        return next({ foo: 'bar' })
       },
-      () => ({ type: BREAK }),
+      () => brk(),
       () => {
         throw new Error('Middleware did not halt')
       },
@@ -64,7 +58,7 @@ test('preventing any further middleware being called', (_, done) => {
       {},
       (_, res) => {
         res.sendStatus(200)
-        return { type: FINISH }
+        return finish()
       },
       () => {
         throw new Error('Middleware did not finish')
@@ -80,10 +74,7 @@ test('preventing any further middleware being called', (_, done) => {
 
 test('types with separate functions', () => {
   function foo(): IOMiddleware<{}, { foo: string }> {
-    return (_req, _res, state) => ({
-      type: CONTINUE,
-      state: { ...state, foo: 'bar' },
-    })
+    return (_req, _res, state) => next({ ...state, foo: 'bar' })
   }
 
   function success(): IOMiddleware<
@@ -91,13 +82,20 @@ test('types with separate functions', () => {
     { foo: string; mung: number }
   > {
     return (_req, _res, state) =>
-      state.foo === 'rab'
-        ? { type: BREAK }
-        : { type: CONTINUE, state: { ...state, mung: 1 } }
+      state.foo === 'rab' ? brk() : next({ ...state, mung: 1 })
   }
 
   express().use(ioMiddleware({}, foo(), success()))
 
   // @ts-expect-error Argument of type '{}' is not assignable to parameter of type '{ foo: string; }'.
   express().use(ioMiddleware({}, success()))
+})
+
+test('unexpected output "type"', () => {
+  express().use(
+    ioMiddleware({}, () =>
+      // @ts-expect-error Type 'string' is not assignable to type 'unique symbol'.
+      ({ type: 'foo' }),
+    ),
+  )
 })
