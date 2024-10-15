@@ -6,17 +6,23 @@ Creates middleware that will accumulate state.
 
 ```typescript
 import express from 'express'
-import { ioMiddleware, FINISHED } from 'io-middleware'
+import { ioMiddleware, CONTINUE, FINISHED } from 'io-middleware'
 
 express().get(
   '/user/:id',
   ioMiddleware(
     null, // initial value
-    async (req, res) => fetchUser(req.params.id),
-    async (req, res, user) => ({ name: user.name, email: user.email }),
+    async (req, res) => ({
+      type: CONTINUE,
+      state: await fetchUser(req.params.id),
+    }),
+    (req, res, user) => ({
+      type: CONTINUE,
+      state: { name: user.name, email: user.email },
+    }),
     (req, res, state) => {
       res.json(state)
-      return FINISHED // prevents any further middleware being called
+      return { type: FINISHED } // prevents any further middleware being called
     },
   ),
 )
@@ -63,13 +69,13 @@ If we were to create another route and forget to assign an `articleId` to our lo
 Strongly typing our middleware can help us ensure that the required state has been populated.
 
 ```typescript
-import { FINISH, ioMiddleware, IOMiddleware } from 'io-middleware'
+import { CONTINUE, FINISH, ioMiddleware, IOMiddleware } from 'io-middleware'
 
 function articleInfo<I>(): IOMiddleware<I, I & { articleId: string }> {
   return (req, res, state) => {
     const articleId = getArticleFromReferrer(req)
     if (!articleId) throw new ServerError(404)
-    return { ...state, articleId }
+    return { type: CONTINUE, state: { ...state, articleId } }
   }
 }
 
@@ -80,7 +86,7 @@ function partitionKey<I extends { articleId: string }>(): IOMiddleware<
   return (req, res, state) => {
     const partitionKey = partitionLookUp(state.articleId)
     if (!partitionKey) throw new ServerError(404)
-    return { ...state, partitionKey }
+    return { type: CONTINUE, state: { ...state, partitionKey } }
   }
 }
 
@@ -92,7 +98,7 @@ express().get(
     partitionKey(),
     (req, res, state) => {
       res.json(state)
-      return FINISH
+      return { type: FINISH }
     },
   ),
 )
