@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import type { FINISH, BREAK } from './index.js'
+import type { CONTINUE, FINISH, BREAK } from './index.js'
 
 export interface IOMiddleware<
   I,
@@ -14,8 +14,23 @@ export interface IOMiddleware<
     req: Request<P, ResBody, ReqBody, ReqQuery, LocalsObj>,
     res: Response<ResBody, LocalsObj>,
     input: I,
-  ): Asyncable<O | typeof BREAK | typeof FINISH>
+  ): Asyncable<IOMiddlewareOutput<O>>
 }
+
+interface Continue<T> {
+  type: typeof CONTINUE
+  state: T
+}
+
+interface Break {
+  type: typeof BREAK
+}
+
+interface Finish {
+  type: typeof FINISH
+}
+
+export type IOMiddlewareOutput<T> = Continue<T> | Break | Finish
 
 export interface ParamsDictionary {
   [key: string]: string
